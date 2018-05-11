@@ -22,6 +22,8 @@ import java.net.ProtocolException;
 import java.net.URL;
 import java.util.Vector;
 
+import javax.net.ssl.HttpsURLConnection;
+
 public class MainActivity extends AppCompatActivity {
 
     String TAG = MainActivity.class.getSimpleName();
@@ -35,52 +37,55 @@ public class MainActivity extends AppCompatActivity {
         Log.w(TAG, "in onCreate()");
 
         //Connecting to NewsApi without Async Task
-        HttpURLConnection urlConnection = null;
-        BufferedReader reader=null;
+//        HttpURLConnection urlConnection = null;
+//        BufferedReader reader=null;
+//
+//        try {
+//            URL url = new URL("https://newsapi.org/v1/articles?source=the-verge&apiKey="+R.string.news_api_key);
+//            urlConnection = (HttpURLConnection) url.openConnection();
+//            urlConnection.setRequestMethod("GET");
+////            urlConnection.connect();
+//
+//
+//            // Read the input stream into a String
+//            InputStream inputStream = urlConnection.getInputStream();
+//            StringBuffer buffer = new StringBuffer();
+//
+//             reader = new BufferedReader(new InputStreamReader(inputStream));
+//
+//            String line;
+//            while ((line = reader.readLine()) != null) {
+//                // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
+//                // But it does make debugging a *lot* easier if you print out the completed
+//                // buffer for debugging.
+//                buffer.append(line + "\n");
+//            }
+//
+//            String JsonStr = buffer.toString();
+//            Log.d("News Response",JsonStr);
+//
+//        } catch (MalformedURLException e) {
+//            e.printStackTrace();
+//        } catch (ProtocolException e) {
+//            e.printStackTrace();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }finally {
+//            if (urlConnection != null) {
+//                urlConnection.disconnect();
+//            }
+//            if (reader != null) {
+//                try {
+//                    reader.close();
+//                } catch (final IOException e) {
+//                    Log.e(TAG, "Error closing stream", e);
+//                }
+//            }
+//        }
 
-        try {
-            URL url = new URL("https://newsapi.org/v1/articles?source=the-verge&apiKey="+R.string.news_api_key);
-            urlConnection = (HttpURLConnection) url.openConnection();
-            urlConnection.setRequestMethod("GET");
-//            urlConnection.connect();
-
-
-            // Read the input stream into a String
-            InputStream inputStream = urlConnection.getInputStream();
-            StringBuffer buffer = new StringBuffer();
-
-             reader = new BufferedReader(new InputStreamReader(inputStream));
-
-            String line;
-            while ((line = reader.readLine()) != null) {
-                // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
-                // But it does make debugging a *lot* easier if you print out the completed
-                // buffer for debugging.
-                buffer.append(line + "\n");
-            }
-
-            String JsonStr = buffer.toString();
-            Log.d("News Response",JsonStr);
-
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (ProtocolException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }finally {
-            if (urlConnection != null) {
-                urlConnection.disconnect();
-            }
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (final IOException e) {
-                    Log.e(TAG, "Error closing stream", e);
-                }
-            }
-        }
+        new SyncTask_GET().execute();
     }
+
     public class SyncTask_GET extends AsyncTask<String, Integer, String> {
 
         @Override
@@ -91,15 +96,15 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected String doInBackground(String... strings) {
-            HttpURLConnection urlConnection = null;
-            BufferedReader reader=null;
-            String JsonStr=null;
+            HttpsURLConnection urlConnection = null;
+            BufferedReader reader = null;
+            String JsonStr = null;
 
             try {
-                URL url = new URL("https://newsapi.org/v1/articles?source=the-verge&apiKey="+R.string.news_api_key);
-                urlConnection = (HttpURLConnection) url.openConnection();
+                URL url = new URL("https://newsapi.org/v1/articles?source=the-verge&apiKey=52810607c13742f187156c46355d01b7");
+                urlConnection = (HttpsURLConnection) url.openConnection();
                 urlConnection.setRequestMethod("GET");
-//            urlConnection.connect();
+                urlConnection.connect();
 
 
                 // Read the input stream into a String
@@ -116,8 +121,8 @@ public class MainActivity extends AppCompatActivity {
                     buffer.append(line + "\n");
                 }
 
-                 JsonStr = buffer.toString();
-                Log.d("News Response",JsonStr);
+                JsonStr = buffer.toString();
+                Log.d("News Response", JsonStr);
 
             } catch (MalformedURLException e) {
                 e.printStackTrace();
@@ -125,7 +130,7 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
-            }finally {
+            } finally {
                 if (urlConnection != null) {
                     urlConnection.disconnect();
                 }
@@ -143,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
-            if(s!=null) {
+            if (s != null) {
                 final String OWM_ARTICLES = "articles";
                 final String OWM_SOURCE = "source";
                 final String OWM_TITLE = "title";
@@ -182,6 +187,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
     @Override
     protected void onStart() {
         super.onStart();
