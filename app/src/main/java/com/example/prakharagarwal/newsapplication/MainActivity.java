@@ -6,6 +6,8 @@ import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import org.json.JSONArray;
@@ -36,52 +38,15 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(this, "this is a Toast", Toast.LENGTH_SHORT).show();
         Log.w(TAG, "in onCreate()");
 
-        //Connecting to NewsApi without Async Task
-//        HttpURLConnection urlConnection = null;
-//        BufferedReader reader=null;
-//
-//        try {
-//            URL url = new URL("https://newsapi.org/v1/articles?source=the-verge&apiKey="+R.string.news_api_key);
-//            urlConnection = (HttpURLConnection) url.openConnection();
-//            urlConnection.setRequestMethod("GET");
-////            urlConnection.connect();
-//
-//
-//            // Read the input stream into a String
-//            InputStream inputStream = urlConnection.getInputStream();
-//            StringBuffer buffer = new StringBuffer();
-//
-//             reader = new BufferedReader(new InputStreamReader(inputStream));
-//
-//            String line;
-//            while ((line = reader.readLine()) != null) {
-//                // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
-//                // But it does make debugging a *lot* easier if you print out the completed
-//                // buffer for debugging.
-//                buffer.append(line + "\n");
-//            }
-//
-//            String JsonStr = buffer.toString();
-//            Log.d("News Response",JsonStr);
-//
-//        } catch (MalformedURLException e) {
-//            e.printStackTrace();
-//        } catch (ProtocolException e) {
-//            e.printStackTrace();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }finally {
-//            if (urlConnection != null) {
-//                urlConnection.disconnect();
-//            }
-//            if (reader != null) {
-//                try {
-//                    reader.close();
-//                } catch (final IOException e) {
-//                    Log.e(TAG, "Error closing stream", e);
-//                }
-//            }
-//        }
+
+        String[] mobileArray = {"Black Widow","Brown Recluse","Honey Bee","Army Ants",
+                "Ladybug","Dog Flea","Head Lice","Malaria Mosquito","Wolf Spider","Brown Scorpion","Centipede","American Cockroach"
+        ,"Fruit Fly","Yellow Jacket"};
+        ArrayAdapter adapter = new ArrayAdapter<String>(this,
+                R.layout.item_listview, mobileArray);
+
+        ListView listView = (ListView) findViewById(R.id.listview);
+        listView.setAdapter(adapter);
 
         new SyncTask_GET().execute();
     }
@@ -188,40 +153,5 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        Log.w(TAG, "in onStart()");
-    }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Log.w(TAG, "in onResume()");
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        Log.w(TAG, "in onPause()");
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        Log.w(TAG, "in onStop()");
-    }
-
-    @Override
-    protected void onRestart() {
-        super.onRestart();
-        Log.w(TAG, "in onRestart()");
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        Log.w(TAG, "in onDestroy()");
-
-    }
 }
