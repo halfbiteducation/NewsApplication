@@ -22,6 +22,8 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -29,6 +31,8 @@ import javax.net.ssl.HttpsURLConnection;
 public class MainActivity extends AppCompatActivity {
 
     String TAG = MainActivity.class.getSimpleName();
+    List<String> newsArticles;
+    ArrayAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,11 +43,12 @@ public class MainActivity extends AppCompatActivity {
         Log.w(TAG, "in onCreate()");
 
 
-        String[] mobileArray = {"Black Widow","Brown Recluse","Honey Bee","Army Ants",
-                "Ladybug","Dog Flea","Head Lice","Malaria Mosquito","Wolf Spider","Brown Scorpion","Centipede","American Cockroach"
-        ,"Fruit Fly","Yellow Jacket"};
-        ArrayAdapter adapter = new ArrayAdapter<String>(this,
-                R.layout.item_listview, mobileArray);
+//        String[] mobileArray = {"Black Widow","Brown Recluse","Honey Bee","Army Ants",
+//                "Ladybug","Dog Flea","Head Lice","Malaria Mosquito","Wolf Spider","Brown Scorpion","Centipede","American Cockroach"
+//        ,"Fruit Fly","Yellow Jacket"};
+        newsArticles=new ArrayList<>();
+         adapter = new ArrayAdapter<String>(this,
+                R.layout.item_listview, newsArticles);
 
         ListView listView = (ListView) findViewById(R.id.listview);
         listView.setAdapter(adapter);
@@ -142,7 +147,10 @@ public class MainActivity extends AppCompatActivity {
                         url = article.getString(OWM_URL);
                         urlToImage = article.getString(OWM_URL_TO_IMAGE);
 
+                        newsArticles.add(title);
+
                     }
+                    adapter.notifyDataSetChanged();
 
                 } catch (JSONException e) {
                     Log.e(TAG, e.getMessage(), e);
