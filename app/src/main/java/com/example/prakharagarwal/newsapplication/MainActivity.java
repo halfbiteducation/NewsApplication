@@ -31,8 +31,9 @@ import javax.net.ssl.HttpsURLConnection;
 public class MainActivity extends AppCompatActivity {
 
     String TAG = MainActivity.class.getSimpleName();
-    List<String> newsArticles;
+    ArrayList<String> newsArticles;
     ArrayAdapter adapter;
+    NewsListAdapter newsListAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,16 +43,20 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(this, "this is a Toast", Toast.LENGTH_SHORT).show();
         Log.w(TAG, "in onCreate()");
 
-
+// list view mock data
 //        String[] mobileArray = {"Black Widow","Brown Recluse","Honey Bee","Army Ants",
 //                "Ladybug","Dog Flea","Head Lice","Malaria Mosquito","Wolf Spider","Brown Scorpion","Centipede","American Cockroach"
 //        ,"Fruit Fly","Yellow Jacket"};
-        newsArticles=new ArrayList<>();
-         adapter = new ArrayAdapter<String>(this,
-                R.layout.item_listview, newsArticles);
 
+        // simple adapter without custom view
+//        newsArticles = new ArrayList<>();
+//        adapter = new ArrayAdapter<String>(this,
+//                R.layout.item_listview, newsArticles);
+
+        newsArticles=new ArrayList<>();
+         newsListAdapter=new NewsListAdapter(this,newsArticles);
         ListView listView = (ListView) findViewById(R.id.listview);
-        listView.setAdapter(adapter);
+        listView.setAdapter(newsListAdapter);
 
         new SyncTask_GET().execute();
     }
@@ -94,10 +99,6 @@ public class MainActivity extends AppCompatActivity {
                 JsonStr = buffer.toString();
                 Log.d("News Response", JsonStr);
 
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (ProtocolException e) {
-                e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
@@ -150,7 +151,7 @@ public class MainActivity extends AppCompatActivity {
                         newsArticles.add(title);
 
                     }
-                    adapter.notifyDataSetChanged();
+                    newsListAdapter.notifyDataSetChanged();
 
                 } catch (JSONException e) {
                     Log.e(TAG, e.getMessage(), e);
