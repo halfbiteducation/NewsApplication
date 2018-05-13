@@ -83,45 +83,12 @@ public class MainActivity extends AppCompatActivity {
             HttpsURLConnection urlConnection = null;
             BufferedReader reader = null;
             String JsonStr = null;
-            SSLContext context=null;
 
-            // Load CAs from an InputStream
-// (could be from a resource or ByteArrayInputStream or ...)
-            try {
-                CertificateFactory cf = CertificateFactory.getInstance("X.509");
-// From https://www.washington.edu/itconnect/security/ca/load-der.crt
-                InputStream caInput = new BufferedInputStream(new FileInputStream("load-der.crt"));
-                Certificate ca;
-                try {
-                    ca = cf.generateCertificate(caInput);
-                    System.out.println("ca=" + ((X509Certificate) ca).getSubjectDN());
-                } finally {
-                    caInput.close();
-                }
-
-// Create a KeyStore containing our trusted CAs
-                String keyStoreType = KeyStore.getDefaultType();
-                KeyStore keyStore = KeyStore.getInstance(keyStoreType);
-                keyStore.load(null, null);
-                keyStore.setCertificateEntry("ca", ca);
-
-// Create a TrustManager that trusts the CAs in our KeyStore
-                String tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm();
-                TrustManagerFactory tmf = TrustManagerFactory.getInstance(tmfAlgorithm);
-                tmf.init(keyStore);
-
-// Create an SSLContext that uses our TrustManager
-                 context = SSLContext.getInstance("TLS");
-                context.init(null, tmf.getTrustManagers(), null);
-            } catch (Exception e) {
-                Toast.makeText(MainActivity.this, "hi", Toast.LENGTH_SHORT).show();
-            }
 
             try {
                 URL url = new URL("https://newsapi.org/v1/articles?source=the-verge&apiKey=52810607c13742f187156c46355d01b7");
                 urlConnection = (HttpsURLConnection) url.openConnection();
                 urlConnection.setRequestMethod("GET");
-                urlConnection.setSSLSocketFactory(context.getSocketFactory());
                 urlConnection.connect();
 
 
