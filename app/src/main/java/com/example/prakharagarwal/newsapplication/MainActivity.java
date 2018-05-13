@@ -14,7 +14,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -22,18 +24,25 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
+import java.security.KeyStore;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
 import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 
 public class MainActivity extends AppCompatActivity {
 
     String TAG = MainActivity.class.getSimpleName();
-    ArrayList<String> newsArticles;
+    //    ArrayList<String> newsArticles;
     ArrayAdapter adapter;
     NewsListAdapter newsListAdapter;
+    ArrayList<NewsArticle> newsArticles;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,8 +62,8 @@ public class MainActivity extends AppCompatActivity {
 //        adapter = new ArrayAdapter<String>(this,
 //                R.layout.item_listview, newsArticles);
 
-        newsArticles=new ArrayList<>();
-         newsListAdapter=new NewsListAdapter(this,newsArticles);
+        newsArticles = new ArrayList<>();
+        newsListAdapter = new NewsListAdapter(this, newsArticles);
         ListView listView = (ListView) findViewById(R.id.listview);
         listView.setAdapter(newsListAdapter);
 
@@ -74,11 +83,45 @@ public class MainActivity extends AppCompatActivity {
             HttpsURLConnection urlConnection = null;
             BufferedReader reader = null;
             String JsonStr = null;
+            SSLContext context=null;
+
+            // Load CAs from an InputStream
+// (could be from a resource or ByteArrayInputStream or ...)
+            try {
+                CertificateFactory cf = CertificateFactory.getInstance("X.509");
+// From https://www.washington.edu/itconnect/security/ca/load-der.crt
+                InputStream caInput = new BufferedInputStream(new FileInputStream("load-der.crt"));
+                Certificate ca;
+                try {
+                    ca = cf.generateCertificate(caInput);
+                    System.out.println("ca=" + ((X509Certificate) ca).getSubjectDN());
+                } finally {
+                    caInput.close();
+                }
+
+// Create a KeyStore containing our trusted CAs
+                String keyStoreType = KeyStore.getDefaultType();
+                KeyStore keyStore = KeyStore.getInstance(keyStoreType);
+                keyStore.load(null, null);
+                keyStore.setCertificateEntry("ca", ca);
+
+// Create a TrustManager that trusts the CAs in our KeyStore
+                String tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm();
+                TrustManagerFactory tmf = TrustManagerFactory.getInstance(tmfAlgorithm);
+                tmf.init(keyStore);
+
+// Create an SSLContext that uses our TrustManager
+                 context = SSLContext.getInstance("TLS");
+                context.init(null, tmf.getTrustManagers(), null);
+            } catch (Exception e) {
+                Toast.makeText(MainActivity.this, "hi", Toast.LENGTH_SHORT).show();
+            }
 
             try {
                 URL url = new URL("https://newsapi.org/v1/articles?source=the-verge&apiKey=52810607c13742f187156c46355d01b7");
                 urlConnection = (HttpsURLConnection) url.openConnection();
                 urlConnection.setRequestMethod("GET");
+                urlConnection.setSSLSocketFactory(context.getSocketFactory());
                 urlConnection.connect();
 
 
@@ -148,8 +191,14 @@ public class MainActivity extends AppCompatActivity {
                         url = article.getString(OWM_URL);
                         urlToImage = article.getString(OWM_URL_TO_IMAGE);
 
-                        newsArticles.add(title);
+                        NewsArticle newsArticle = new NewsArticle();
+                        newsArticle.setTitle(title);
+                        newsArticle.setDescription(description);
+                        newsArticle.setUrl(url);
+                        newsArticle.setUrlToImage(urlToImage);
 
+//                        newsArticles.add(title);
+                        newsArticles.add(newsArticle);
                     }
                     newsListAdapter.notifyDataSetChanged();
 
