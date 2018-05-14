@@ -5,6 +5,8 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -52,62 +54,38 @@ public class MainActivity extends AppCompatActivity {
     //    ArrayList<String> newsArticles;
     ArrayAdapter adapter;
     NewsListAdapter newsListAdapter;
+    NewsRecyclerAdapter newsRecyclerAdapter;
     ArrayList<NewsArticle> newsArticles;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        //Displaying Toasts
-        Toast.makeText(this, "this is a Toast", Toast.LENGTH_SHORT).show();
-        Log.w(TAG, "in onCreate()");
 
-        //Connecting to NewsApi without Async Task
-//        HttpURLConnection urlConnection = null;
-//        BufferedReader reader=null;
-//
-//        try {
-//            URL url = new URL("https://newsapi.org/v1/articles?source=the-verge&apiKey="+R.string.news_api_key);
-//            urlConnection = (HttpURLConnection) url.openConnection();
-//            urlConnection.setRequestMethod("GET");
-////            urlConnection.connect();
-//
-//
-//            // Read the input stream into a String
-//            InputStream inputStream = urlConnection.getInputStream();
-//            StringBuffer buffer = new StringBuffer();
-//
-//             reader = new BufferedReader(new InputStreamReader(inputStream));
-//
-//            String line;
-//            while ((line = reader.readLine()) != null) {
-//                // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
-//                // But it does make debugging a *lot* easier if you print out the completed
-//                // buffer for debugging.
-//                buffer.append(line + "\n");
-//            }
-//
-//            String JsonStr = buffer.toString();
-//            Log.d("News Response",JsonStr);
-//
-//        } catch (MalformedURLException e) {
-//            e.printStackTrace();
-//        } catch (ProtocolException e) {
-//            e.printStackTrace();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }finally {
-//            if (urlConnection != null) {
-//                urlConnection.disconnect();
-//            }
-//            if (reader != null) {
-//                try {
-//                    reader.close();
-//                } catch (final IOException e) {
-//                    Log.e(TAG, "Error closing stream", e);
-//                }
-//            }
-//        }
+
+// list view mock data
+//        String[] mobileArray = {"Black Widow","Brown Recluse","Honey Bee","Army Ants",
+//                "Ladybug","Dog Flea","Head Lice","Malaria Mosquito","Wolf Spider","Brown Scorpion","Centipede","American Cockroach"
+//        ,"Fruit Fly","Yellow Jacket"};
+
+        // simple adapter without custom view
+//        newsArticles = new ArrayList<>();
+//        adapter = new ArrayAdapter<String>(this,
+//                R.layout.item_listview, newsArticles);
+
+
+        newsArticles = new ArrayList<>();
+
+        // list view implementation
+      /*  newsListAdapter = new NewsListAdapter(this, newsArticles);
+        ListView listView = (ListView) findViewById(R.id.listview);
+        listView.setAdapter(newsListAdapter);*/
+
+        newsRecyclerAdapter = new NewsRecyclerAdapter(this,newsArticles);
+        RecyclerView recyclerView=findViewById(R.id.news_recycler_view);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false));
+        recyclerView.setAdapter(newsRecyclerAdapter);
+
 
         new SyncTask_GET().execute();
     }
@@ -205,7 +183,16 @@ public class MainActivity extends AppCompatActivity {
                         url = article.getString(OWM_URL);
                         urlToImage = article.getString(OWM_URL_TO_IMAGE);
 
+                        NewsArticle newsArticle = new NewsArticle();
+                        newsArticle.setTitle(title);
+                        newsArticle.setDescription(description);
+                        newsArticle.setUrl(url);
+                        newsArticle.setUrlToImage(urlToImage);
+
+//                        newsArticles.add(title);
+                        newsArticles.add(newsArticle);
                     }
+                    newsRecyclerAdapter.notifyDataSetChanged();
 
                 } catch (JSONException e) {
                     Log.e(TAG, e.getMessage(), e);
