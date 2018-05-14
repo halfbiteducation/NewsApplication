@@ -24,6 +24,13 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
@@ -34,6 +41,9 @@ import java.util.Vector;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
 
 public class MainActivity extends AppCompatActivity {
@@ -52,20 +62,52 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(this, "this is a Toast", Toast.LENGTH_SHORT).show();
         Log.w(TAG, "in onCreate()");
 
-// list view mock data
-//        String[] mobileArray = {"Black Widow","Brown Recluse","Honey Bee","Army Ants",
-//                "Ladybug","Dog Flea","Head Lice","Malaria Mosquito","Wolf Spider","Brown Scorpion","Centipede","American Cockroach"
-//        ,"Fruit Fly","Yellow Jacket"};
-
-        // simple adapter without custom view
-//        newsArticles = new ArrayList<>();
-//        adapter = new ArrayAdapter<String>(this,
-//                R.layout.item_listview, newsArticles);
-
-        newsArticles = new ArrayList<>();
-        newsListAdapter = new NewsListAdapter(this, newsArticles);
-        ListView listView = (ListView) findViewById(R.id.listview);
-        listView.setAdapter(newsListAdapter);
+        //Connecting to NewsApi without Async Task
+//        HttpURLConnection urlConnection = null;
+//        BufferedReader reader=null;
+//
+//        try {
+//            URL url = new URL("https://newsapi.org/v1/articles?source=the-verge&apiKey="+R.string.news_api_key);
+//            urlConnection = (HttpURLConnection) url.openConnection();
+//            urlConnection.setRequestMethod("GET");
+////            urlConnection.connect();
+//
+//
+//            // Read the input stream into a String
+//            InputStream inputStream = urlConnection.getInputStream();
+//            StringBuffer buffer = new StringBuffer();
+//
+//             reader = new BufferedReader(new InputStreamReader(inputStream));
+//
+//            String line;
+//            while ((line = reader.readLine()) != null) {
+//                // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
+//                // But it does make debugging a *lot* easier if you print out the completed
+//                // buffer for debugging.
+//                buffer.append(line + "\n");
+//            }
+//
+//            String JsonStr = buffer.toString();
+//            Log.d("News Response",JsonStr);
+//
+//        } catch (MalformedURLException e) {
+//            e.printStackTrace();
+//        } catch (ProtocolException e) {
+//            e.printStackTrace();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }finally {
+//            if (urlConnection != null) {
+//                urlConnection.disconnect();
+//            }
+//            if (reader != null) {
+//                try {
+//                    reader.close();
+//                } catch (final IOException e) {
+//                    Log.e(TAG, "Error closing stream", e);
+//                }
+//            }
+//        }
 
         new SyncTask_GET().execute();
     }
@@ -84,11 +126,12 @@ public class MainActivity extends AppCompatActivity {
             BufferedReader reader = null;
             String JsonStr = null;
 
-
             try {
                 URL url = new URL("https://newsapi.org/v1/articles?source=the-verge&apiKey=52810607c13742f187156c46355d01b7");
                 urlConnection = (HttpsURLConnection) url.openConnection();
                 urlConnection.setRequestMethod("GET");
+                // if there is ssl handshake exception
+                urlConnection.setSSLSocketFactory(buildSslSocketFactory(MainActivity.this));
                 urlConnection.connect();
 
 
@@ -109,6 +152,10 @@ public class MainActivity extends AppCompatActivity {
                 JsonStr = buffer.toString();
                 Log.d("News Response", JsonStr);
 
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (ProtocolException e) {
+                e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
@@ -158,16 +205,7 @@ public class MainActivity extends AppCompatActivity {
                         url = article.getString(OWM_URL);
                         urlToImage = article.getString(OWM_URL_TO_IMAGE);
 
-                        NewsArticle newsArticle = new NewsArticle();
-                        newsArticle.setTitle(title);
-                        newsArticle.setDescription(description);
-                        newsArticle.setUrl(url);
-                        newsArticle.setUrlToImage(urlToImage);
-
-//                        newsArticles.add(title);
-                        newsArticles.add(newsArticle);
                     }
-                    newsListAdapter.notifyDataSetChanged();
 
                 } catch (JSONException e) {
                     Log.e(TAG, e.getMessage(), e);
@@ -176,7 +214,91 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
+        private  SSLSocketFactory buildSslSocketFactory(Context context) {
+            // Add support for self-signed (local) SSL certificates
+            // Based on http://developer.android.com/training/articles/security-ssl.html#UnknownCa
+            try {
+
+                // Load CAs from an InputStream
+                // (could be from a resource or ByteArrayInputStream or ...)
+                CertificateFactory cf = CertificateFactory.getInstance("X.509");
+                // From https://www.networking4all.com/en/ssl+certificates/quickscan/?lang=en&archive=latest&host=newsapi.org
+                InputStream is = context.getResources().getAssets().open("USERTrustRSACertificationAuthority.crt");
+                InputStream caInput = new BufferedInputStream(is);
+                Certificate ca;
+                try {
+                    ca = cf.generateCertificate(caInput);
+                    // System.out.println("ca=" + ((X509Certificate) ca).getSubjectDN());
+                } finally {
+                    caInput.close();
+                }
+
+                // Create a KeyStore containing our trusted CAs
+                String keyStoreType = KeyStore.getDefaultType();
+                KeyStore keyStore = KeyStore.getInstance(keyStoreType);
+                keyStore.load(null, null);
+                keyStore.setCertificateEntry("ca", ca);
+
+                // Create a TrustManager that trusts the CAs in our KeyStore
+                String tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm();
+                TrustManagerFactory tmf = TrustManagerFactory.getInstance(tmfAlgorithm);
+                tmf.init(keyStore);
+
+                // Create an SSLContext that uses our TrustManager
+                SSLContext context1 = SSLContext.getInstance("TLS");
+                context1.init(null, tmf.getTrustManagers(), null);
+                return context1.getSocketFactory();
+
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            } catch (KeyStoreException e) {
+                e.printStackTrace();
+            } catch (KeyManagementException e) {
+                e.printStackTrace();
+            } catch (CertificateException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return null;
+
+        }
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.w(TAG, "in onStart()");
+    }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.w(TAG, "in onResume()");
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.w(TAG, "in onPause()");
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.w(TAG, "in onStop()");
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        Log.w(TAG, "in onRestart()");
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.w(TAG, "in onDestroy()");
+
+    }
 }
