@@ -51,9 +51,6 @@ import javax.net.ssl.TrustManagerFactory;
 public class MainActivity extends AppCompatActivity {
 
     String TAG = MainActivity.class.getSimpleName();
-    //    ArrayList<String> newsArticles;
-    ArrayAdapter adapter;
-    NewsListAdapter newsListAdapter;
     NewsRecyclerAdapter newsRecyclerAdapter;
     ArrayList<NewsArticle> newsArticles;
 
@@ -63,23 +60,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
 
-// list view mock data
-//        String[] mobileArray = {"Black Widow","Brown Recluse","Honey Bee","Army Ants",
-//                "Ladybug","Dog Flea","Head Lice","Malaria Mosquito","Wolf Spider","Brown Scorpion","Centipede","American Cockroach"
-//        ,"Fruit Fly","Yellow Jacket"};
-
-        // simple adapter without custom view
-//        newsArticles = new ArrayList<>();
-//        adapter = new ArrayAdapter<String>(this,
-//                R.layout.item_listview, newsArticles);
-
-
         newsArticles = new ArrayList<>();
-
-        // list view implementation
-      /*  newsListAdapter = new NewsListAdapter(this, newsArticles);
-        ListView listView = (ListView) findViewById(R.id.listview);
-        listView.setAdapter(newsListAdapter);*/
 
         newsRecyclerAdapter = new NewsRecyclerAdapter(this,newsArticles);
         RecyclerView recyclerView=findViewById(R.id.news_recycler_view);

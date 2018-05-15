@@ -1,6 +1,7 @@
 package com.example.prakharagarwal.newsapplication;
 
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -76,7 +77,14 @@ public class NewsRecyclerAdapter extends RecyclerView.Adapter<NewsRecyclerAdapte
 
         @Override
         public void onClick(View v) {
+            NewsArticle article= articles.get(getAdapterPosition());
 
+            Intent intent = new Intent(mContext,  DetailsActivity.class);
+            intent.putExtra("urlToImage",article.getUrlToImage());
+            intent.putExtra("headline", article.getTitle());
+            intent.putExtra("desc", article.getDescription());
+            intent.putExtra("url", article.getUrl());
+            mContext.startActivity(intent);
 
         }
     }

@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">NewsApplication</string>
     <string name="news_api_key">52810607c13742f187156c46355d01b7</string>
+    <string name="full_story_link">Full Story</string>
 
 </resources>
