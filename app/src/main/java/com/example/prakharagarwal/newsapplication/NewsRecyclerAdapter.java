@@ -48,7 +48,6 @@ public class NewsRecyclerAdapter extends RecyclerView.Adapter<NewsRecyclerAdapte
 
         NewsArticle article= articles.get(position);
         holder.title.setText(article.getTitle());
-        holder.description.setText(article.getDescription());
         Picasso.with(mContext).load(article.getUrlToImage()).into(holder.imageView);
 
 
@@ -62,13 +61,11 @@ public class NewsRecyclerAdapter extends RecyclerView.Adapter<NewsRecyclerAdapte
 
     public class ArticleAdapterViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         TextView title;
-        TextView description;
         ImageView imageView;
 
         public ArticleAdapterViewHolder(View view) {
             super(view);
             title = (TextView) view.findViewById(R.id.list_item_news_title);
-            description = (TextView) view.findViewById(R.id.list_item_news_description);
             imageView = view.findViewById(R.id.news_image);
             view.setOnClickListener(this);
 

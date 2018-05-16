@@ -22,7 +22,7 @@ public class DetailsActivity extends AppCompatActivity {
         descView = findViewById(R.id.detail_desc);
         imageView = findViewById(R.id.detail_image);
         link = findViewById(R.id.detail_url);
-        if (getIntent().getStringExtra("headline") != null) {
+        if (!getIntent().getStringExtra("headline").equals("")) {
 
             Intent intent = getIntent();
             Picasso.with(this).load(intent.getStringExtra("urlToImage")).into(imageView);
