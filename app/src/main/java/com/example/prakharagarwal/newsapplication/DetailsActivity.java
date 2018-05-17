@@ -50,13 +50,18 @@ public class DetailsActivity extends AppCompatActivity {
         descView = findViewById(R.id.detail_desc);
         imageView = findViewById(R.id.detail_image);
         link = findViewById(R.id.detail_url);
-        if (!getIntent().getStringExtra("headline").equals("")) {
+        if (getIntent().getSerializableExtra("NewsArticle")!=null) {
 
             Intent intent = getIntent();
-            Picasso.with(this).load(intent.getStringExtra("urlToImage")).into(imageView);
-            headlineView.setText(intent.getStringExtra("headline"));
-            descView.setText(intent.getStringExtra("desc"));
-            link.setText(intent.getStringExtra("url"));
+            NewsArticle article= (NewsArticle) getIntent().getSerializableExtra("NewsArticle");
+//            Picasso.with(this).load(intent.getStringExtra("urlToImage")).into(imageView);
+//            headlineView.setText(intent.getStringExtra("headline"));
+//            descView.setText(intent.getStringExtra("desc"));
+//            link.setText(intent.getStringExtra("url"));
+            Picasso.with(this).load(article.getUrlToImage()).into(imageView);
+            headlineView.setText(article.getTitle());
+            descView.setText(article.getDescription());
+            link.setText(article.getUrl());
         }
     }
 

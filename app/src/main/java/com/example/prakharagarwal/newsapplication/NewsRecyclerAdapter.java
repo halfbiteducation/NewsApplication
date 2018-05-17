@@ -26,9 +26,8 @@ public class NewsRecyclerAdapter extends RecyclerView.Adapter<NewsRecyclerAdapte
 
     public NewsRecyclerAdapter(Context context, ArrayList<NewsArticle> articles) {
         mContext = context;
-        this.articles=articles;
+        this.articles = articles;
     }
-
 
 
     @Override
@@ -46,7 +45,7 @@ public class NewsRecyclerAdapter extends RecyclerView.Adapter<NewsRecyclerAdapte
     @Override
     public void onBindViewHolder(ArticleAdapterViewHolder holder, int position) {
 
-        NewsArticle article= articles.get(position);
+        NewsArticle article = articles.get(position);
         holder.title.setText(article.getTitle());
         Picasso.with(mContext).load(article.getUrlToImage()).into(holder.imageView);
 
@@ -74,13 +73,14 @@ public class NewsRecyclerAdapter extends RecyclerView.Adapter<NewsRecyclerAdapte
 
         @Override
         public void onClick(View v) {
-            NewsArticle article= articles.get(getAdapterPosition());
+            NewsArticle article = articles.get(getAdapterPosition());
 
-            Intent intent = new Intent(mContext,  DetailsActivity.class);
-            intent.putExtra("urlToImage",article.getUrlToImage());
-            intent.putExtra("headline", article.getTitle());
-            intent.putExtra("desc", article.getDescription());
-            intent.putExtra("url", article.getUrl());
+            Intent intent = new Intent(mContext, DetailsActivity.class);
+//            intent.putExtra("urlToImage", article.getUrlToImage());
+//            intent.putExtra("headline", article.getTitle());
+//            intent.putExtra("desc", article.getDescription());
+//            intent.putExtra("url", article.getUrl());
+            intent.putExtra("NewsArticle", article);
             mContext.startActivity(intent);
 
         }
