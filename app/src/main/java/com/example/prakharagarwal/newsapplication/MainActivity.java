@@ -3,6 +3,7 @@ package com.example.prakharagarwal.newsapplication;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -42,18 +43,19 @@ public class MainActivity extends AppCompatActivity {
     String TAG = MainActivity.class.getSimpleName();
     NewsRecyclerAdapter newsRecyclerAdapter;
     ArrayList<NewsArticle> newsArticles;
+    RecyclerView recyclerView;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater menuInflater=getMenuInflater();
-        menuInflater.inflate(R.menu.menu_main,menu);
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.menu_main, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        int id=item.getItemId();
-        if(id==R.id.menu_item_refresh){
+        int id = item.getItemId();
+        if (id == R.id.menu_item_refresh) {
             new SyncTask_GET().execute();
         }
         return true;
@@ -64,16 +66,38 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Log.e(TAG, "on oncreate");
 
         newsArticles = new ArrayList<>();
 
-        newsRecyclerAdapter = new NewsRecyclerAdapter(this,newsArticles);
-        RecyclerView recyclerView=findViewById(R.id.news_recycler_view);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false));
+        newsRecyclerAdapter = new NewsRecyclerAdapter(this, newsArticles);
+        recyclerView = findViewById(R.id.news_recycler_view);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         recyclerView.setAdapter(newsRecyclerAdapter);
 
+        if (savedInstanceState == null)
+            new SyncTask_GET().execute();
+    }
 
-        new SyncTask_GET().execute();
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        Log.e(TAG, "on restore instance state");
+        String value = (String) savedInstanceState.get("value");
+
+            newsArticles=(ArrayList<NewsArticle>) savedInstanceState.getSerializable("newsList");
+            newsRecyclerAdapter.addAll(newsArticles);
+            newsRecyclerAdapter.notifyDataSetChanged();
+
+        super.onRestoreInstanceState(savedInstanceState);
+    }
+
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        Log.e(TAG, "on save instance state");
+        outState.putString("value", "1");
+        outState.putSerializable("newsList",newsArticles);
+        super.onSaveInstanceState(outState);
     }
 
     public class SyncTask_GET extends AsyncTask<String, Integer, String> {
@@ -187,7 +211,8 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
-        private  SSLSocketFactory buildSslSocketFactory(Context context) {
+
+        private SSLSocketFactory buildSslSocketFactory(Context context) {
             // Add support for self-signed (local) SSL certificates
             // Based on http://developer.android.com/training/articles/security-ssl.html#UnknownCa
             try {

@@ -58,6 +58,10 @@ public class NewsRecyclerAdapter extends RecyclerView.Adapter<NewsRecyclerAdapte
         return articles.size();
     }
 
+    public void addAll(ArrayList<NewsArticle> newsArticles) {
+        this.articles=newsArticles;
+    }
+
 
     public class ArticleAdapterViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         TextView title;
