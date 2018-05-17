@@ -8,4 +8,10 @@
         app:showAsAction="always"
         android:icon="@drawable/ic_refresh_white_24dp"
         />
+    <item
+        android:id="@+id/menu_item_settings"
+        android:title="Settings"
+        app:showAsAction="never"
+        android:icon="@drawable/ic_refresh_white_24dp"
+        />
 </menu>

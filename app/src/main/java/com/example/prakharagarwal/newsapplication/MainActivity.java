@@ -1,6 +1,7 @@
 package com.example.prakharagarwal.newsapplication;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -58,6 +59,9 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
         if (id == R.id.menu_item_refresh) {
             new SyncTask_GET().execute();
+        }else if (id == R.id.menu_item_settings) {
+            Intent intent=new Intent(MainActivity.this,SettingsActivity.class);
+            startActivity(intent);
         }
         return true;
     }
