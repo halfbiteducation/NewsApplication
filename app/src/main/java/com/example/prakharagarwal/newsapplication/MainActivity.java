@@ -1,6 +1,7 @@
 package com.example.prakharagarwal.newsapplication;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -75,8 +76,20 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         recyclerView.setAdapter(newsRecyclerAdapter);
 
-        if (savedInstanceState == null)
-            new SyncTask_GET().execute();
+        SharedPreferences preferences = getSharedPreferences("NewsSource", MODE_PRIVATE);
+        if (preferences.getString("source", null) == null) {
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.putString("source", "the-verge");
+            editor.apply();
+        }
+        if (savedInstanceState == null) {
+            String source=null;
+            if (preferences.getString("source", null) != null) {
+                 source=preferences.getString("source", "the-verge");
+            }
+            new SyncTask_GET().execute(source);
+        }
+
     }
 
     @Override
@@ -84,9 +97,9 @@ public class MainActivity extends AppCompatActivity {
         Log.e(TAG, "on restore instance state");
         String value = (String) savedInstanceState.get("value");
 
-            newsArticles=(ArrayList<NewsArticle>) savedInstanceState.getSerializable("newsList");
-            newsRecyclerAdapter.addAll(newsArticles);
-            newsRecyclerAdapter.notifyDataSetChanged();
+        newsArticles = (ArrayList<NewsArticle>) savedInstanceState.getSerializable("newsList");
+        newsRecyclerAdapter.addAll(newsArticles);
+        newsRecyclerAdapter.notifyDataSetChanged();
 
         super.onRestoreInstanceState(savedInstanceState);
     }
@@ -96,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onSaveInstanceState(Bundle outState) {
         Log.e(TAG, "on save instance state");
         outState.putString("value", "1");
-        outState.putSerializable("newsList",newsArticles);
+        outState.putSerializable("newsList", newsArticles);
         super.onSaveInstanceState(outState);
     }
 
@@ -113,9 +126,10 @@ public class MainActivity extends AppCompatActivity {
             HttpsURLConnection urlConnection = null;
             BufferedReader reader = null;
             String JsonStr = null;
+            String source=strings[0];
 
             try {
-                URL url = new URL("https://newsapi.org/v1/articles?source=the-verge&apiKey=52810607c13742f187156c46355d01b7");
+                URL url = new URL("https://newsapi.org/v1/articles?source="+source+"&apiKey=52810607c13742f187156c46355d01b7");
                 urlConnection = (HttpsURLConnection) url.openConnection();
                 urlConnection.setRequestMethod("GET");
                 // if there is ssl handshake exception
