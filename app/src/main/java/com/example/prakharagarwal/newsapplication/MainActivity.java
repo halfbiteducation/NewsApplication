@@ -7,6 +7,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.preference.Preference;
+import android.support.v7.preference.PreferenceManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -40,7 +42,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener{
 
     String TAG = MainActivity.class.getSimpleName();
     NewsRecyclerAdapter newsRecyclerAdapter;
@@ -80,19 +82,22 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         recyclerView.setAdapter(newsRecyclerAdapter);
 
-        SharedPreferences preferences = getSharedPreferences("NewsSource", MODE_PRIVATE);
-        if (preferences.getString("source", null) == null) {
-            SharedPreferences.Editor editor = preferences.edit();
-            editor.putString("source", "the-verge");
-            editor.apply();
-        }
+//        SharedPreferences preferences = getSharedPreferences("NewsSource", MODE_PRIVATE);
+//        if (preferences.getString("source", null) == null) {
+//            SharedPreferences.Editor editor = preferences.edit();
+//            editor.putString("source", "the-verge");
+//            editor.apply();
+//        }
+
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         if (savedInstanceState == null) {
             String source=null;
-            if (preferences.getString("source", null) != null) {
-                 source=preferences.getString("source", "the-verge");
+            if (preferences.getString("sourcePref", null) != null) {
+                 source=preferences.getString("sourcePref", "the-verge");
             }
             new SyncTask_GET().execute(source);
         }
+        preferences.registerOnSharedPreferenceChangeListener(this);
 
     }
 
@@ -115,6 +120,11 @@ public class MainActivity extends AppCompatActivity {
         outState.putString("value", "1");
         outState.putSerializable("newsList", newsArticles);
         super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        new SyncTask_GET().execute(sharedPreferences.getString(key,"the-verge"));
     }
 
     public class SyncTask_GET extends AsyncTask<String, Integer, String> {
