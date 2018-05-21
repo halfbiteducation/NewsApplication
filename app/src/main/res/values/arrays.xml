@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="news_sources_labels">
+        <item>The Verge</item>
+        <item>BBC News</item>
+        <item>BBC Sport</item>
+        <item>Bloomberg</item>
+    </array>
+    <array name="news_sources_values">
+        <item>the-verge</item>
+        <item>bbc-news</item>
+        <item>bbc-sport</item>
+        <item>bloomberg</item>
+    </array>
+</resources>

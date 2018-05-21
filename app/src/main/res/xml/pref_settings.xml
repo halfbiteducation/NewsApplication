@@ -2,9 +2,17 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
 
-    <EditTextPreference
+    <!--<EditTextPreference-->
+        <!--android:defaultValue="the-verge"-->
+        <!--android:dialogTitle="News Source"-->
+        <!--android:key="sourcePref"-->
+        <!--android:title="Source" />-->
+    <ListPreference
         android:defaultValue="the-verge"
-        android:dialogTitle="News Source"
-        android:key="sourcePref"
-        android:title="Source" />
+        android:entries="@array/news_sources_labels"
+        android:entryValues="@array/news_sources_values"
+        android:key="sources"
+        android:title="News Sources"
+        />
+
 </PreferenceScreen>

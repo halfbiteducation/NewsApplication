@@ -3,12 +3,12 @@ package com.example.prakharagarwal.newsapplication;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceManager;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -60,7 +60,13 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.menu_item_refresh) {
-            new SyncTask_GET().execute();
+            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+                String source=null;
+                if (preferences.getString("sources", null) != null) {
+                    source=preferences.getString("sources", "the-verge");
+                }
+                new SyncTask_GET().execute(source);
         }else if (id == R.id.menu_item_settings) {
             Intent intent=new Intent(MainActivity.this,SettingsActivity.class);
             startActivity(intent);
@@ -79,7 +85,14 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
         newsRecyclerAdapter = new NewsRecyclerAdapter(this, newsArticles);
         recyclerView = findViewById(R.id.news_recycler_view);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
+        if (getResources().getConfiguration().orientation == ActivityInfo.SCREEN_ORIENTATION_USER) {
+            recyclerView.setLayoutManager(new GridLayoutManager(this, 2,LinearLayoutManager.VERTICAL,false));
+
+        } else
+//
+        {
+            recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
+        }
         recyclerView.setAdapter(newsRecyclerAdapter);
 
 //        SharedPreferences preferences = getSharedPreferences("NewsSource", MODE_PRIVATE);
@@ -92,12 +105,13 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         if (savedInstanceState == null) {
             String source=null;
-            if (preferences.getString("sourcePref", null) != null) {
-                 source=preferences.getString("sourcePref", "the-verge");
+            if (preferences.getString("sources", null) != null) {
+                 source=preferences.getString("sources", "the-verge");
             }
             new SyncTask_GET().execute(source);
         }
         preferences.registerOnSharedPreferenceChangeListener(this);
+
 
     }
 
@@ -193,6 +207,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
             if (s != null) {
+                newsArticles.clear();
                 final String OWM_ARTICLES = "articles";
                 final String OWM_SOURCE = "source";
                 final String OWM_TITLE = "title";
@@ -230,6 +245,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 //                        newsArticles.add(title);
                         newsArticles.add(newsArticle);
                     }
+                    newsRecyclerAdapter.addAll(newsArticles);
                     newsRecyclerAdapter.notifyDataSetChanged();
 
                 } catch (JSONException e) {
