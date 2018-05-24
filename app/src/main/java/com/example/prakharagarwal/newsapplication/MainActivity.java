@@ -1,9 +1,12 @@
 package com.example.prakharagarwal.newsapplication;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -15,6 +18,9 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+
+import com.example.prakharagarwal.newsapplication.Data.NewsContract;
+import com.example.prakharagarwal.newsapplication.Data.NewsDBHelper;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -36,18 +42,21 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
 
-public class MainActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener{
+public class MainActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     String TAG = MainActivity.class.getSimpleName();
     NewsRecyclerAdapter newsRecyclerAdapter;
     ArrayList<NewsArticle> newsArticles;
     RecyclerView recyclerView;
+    NewsDBHelper newsDBHelper;
+    List<ContentValues> contentValuesList = new ArrayList<>();
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -62,13 +71,13 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         if (id == R.id.menu_item_refresh) {
             SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-                String source=null;
-                if (preferences.getString("sources", null) != null) {
-                    source=preferences.getString("sources", "the-verge");
-                }
-                new SyncTask_GET().execute(source);
-        }else if (id == R.id.menu_item_settings) {
-            Intent intent=new Intent(MainActivity.this,SettingsActivity.class);
+            String source = null;
+            if (preferences.getString("sources", null) != null) {
+                source = preferences.getString("sources", "the-verge");
+            }
+            new SyncTask_GET().execute(source);
+        } else if (id == R.id.menu_item_settings) {
+            Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
             startActivity(intent);
         }
         return true;
@@ -81,34 +90,45 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
         Log.e(TAG, "on oncreate");
 
+        newsDBHelper = new NewsDBHelper(this);
+
         newsArticles = new ArrayList<>();
 
         newsRecyclerAdapter = new NewsRecyclerAdapter(this, newsArticles);
         recyclerView = findViewById(R.id.news_recycler_view);
         if (getResources().getConfiguration().orientation == ActivityInfo.SCREEN_ORIENTATION_USER) {
-            recyclerView.setLayoutManager(new GridLayoutManager(this, 2,LinearLayoutManager.VERTICAL,false));
+            recyclerView.setLayoutManager(new GridLayoutManager(this, 2, LinearLayoutManager.VERTICAL, false));
 
         } else
-//
         {
             recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         }
         recyclerView.setAdapter(newsRecyclerAdapter);
 
-//        SharedPreferences preferences = getSharedPreferences("NewsSource", MODE_PRIVATE);
-//        if (preferences.getString("source", null) == null) {
-//            SharedPreferences.Editor editor = preferences.edit();
-//            editor.putString("source", "the-verge");
-//            editor.apply();
-//        }
 
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         if (savedInstanceState == null) {
-            String source=null;
-            if (preferences.getString("sources", null) != null) {
-                 source=preferences.getString("sources", "the-verge");
+            newsDBHelper.openConnection();
+            if (newsDBHelper.getNewsCount() >= 0) {
+                Cursor cursor = newsDBHelper.getNews();
+                newsArticles.clear();
+                while (cursor.moveToNext()) {
+                    NewsArticle article = new NewsArticle();
+                    article.setTitle(cursor.getString(0));
+                    article.setDescription(cursor.getString(1));
+                    article.setUrl(cursor.getString(2));
+                    article.setUrlToImage(cursor.getString(3));
+                    newsArticles.add(article);
+                }
+                newsRecyclerAdapter.addAll(newsArticles);
+                newsRecyclerAdapter.notifyDataSetChanged();
+            } else {
+                String source = null;
+                if (preferences.getString("sources", null) != null) {
+                    source = preferences.getString("sources", "the-verge");
+                }
+                new SyncTask_GET().execute(source);
             }
-            new SyncTask_GET().execute(source);
         }
         preferences.registerOnSharedPreferenceChangeListener(this);
 
@@ -138,7 +158,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        new SyncTask_GET().execute(sharedPreferences.getString(key,"the-verge"));
+        new SyncTask_GET().execute(sharedPreferences.getString(key, "the-verge"));
     }
 
     public class SyncTask_GET extends AsyncTask<String, Integer, String> {
@@ -154,10 +174,10 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             HttpsURLConnection urlConnection = null;
             BufferedReader reader = null;
             String JsonStr = null;
-            String source=strings[0];
+            String source = strings[0];
 
             try {
-                URL url = new URL("https://newsapi.org/v1/articles?source="+source+"&apiKey=52810607c13742f187156c46355d01b7");
+                URL url = new URL("https://newsapi.org/v1/articles?source=" + source + "&apiKey=52810607c13742f187156c46355d01b7");
                 urlConnection = (HttpsURLConnection) url.openConnection();
                 urlConnection.setRequestMethod("GET");
                 // if there is ssl handshake exception
@@ -242,11 +262,23 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                         newsArticle.setUrl(url);
                         newsArticle.setUrlToImage(urlToImage);
 
-//                        newsArticles.add(title);
                         newsArticles.add(newsArticle);
+
+                        ContentValues NewsValues = new ContentValues();
+
+                        NewsValues.put(NewsContract.COLUMN_TITLE, title);
+                        NewsValues.put(NewsContract.COLUMN_DESCRIPTION, description);
+                        NewsValues.put(NewsContract.COLUMN_URL, url);
+                        NewsValues.put(NewsContract.COLUMN_URL_TO_IMAGE, urlToImage);
+                        NewsValues.put(NewsContract.COLUMN_CATEGORY, "general");
+                        contentValuesList.add(NewsValues);
                     }
                     newsRecyclerAdapter.addAll(newsArticles);
                     newsRecyclerAdapter.notifyDataSetChanged();
+                    newsDBHelper.openConnection();
+                    newsDBHelper.clearNews();
+                    newsDBHelper.insertNews(contentValuesList);
+
 
                 } catch (JSONException e) {
                     Log.e(TAG, e.getMessage(), e);
