@@ -1,5 +1,6 @@
 package com.example.prakharagarwal.newsapplication;
 
+import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -7,8 +8,10 @@ import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.preference.PreferenceManager;
 import android.support.v7.widget.GridLayoutManager;
@@ -88,7 +91,6 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Log.e(TAG, "on oncreate");
 
         newsDBHelper = new NewsDBHelper(this);
 
@@ -99,8 +101,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         if (getResources().getConfiguration().orientation == ActivityInfo.SCREEN_ORIENTATION_USER) {
             recyclerView.setLayoutManager(new GridLayoutManager(this, 2, LinearLayoutManager.VERTICAL, false));
 
-        } else
-        {
+        } else {
             recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         }
         recyclerView.setAdapter(newsRecyclerAdapter);
@@ -108,9 +109,18 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         if (savedInstanceState == null) {
-            newsDBHelper.openConnection();
-            if (newsDBHelper.getNewsCount() >= 0) {
-                Cursor cursor = newsDBHelper.getNews();
+//            newsDBHelper.openConnection();
+            // for retrieving only title
+//            Cursor cursor = getContentResolver().query(NewsContract.ArticleEntry.CONTENT_URI_TITLE,null,null,null,null);
+
+//              final Uri CONTENT_URI_TITLE =
+//                    NewsContract.ArticleEntry.CONTENT_URI.buildUpon().appendPath("discription").build();
+//            final Uri CONTENT_URI_TITLE =
+//                    NewsContract.ArticleEntry.CONTENT_URI.buildUpon().appendPath("title").build();
+//            Cursor cursor = getContentResolver().query(CONTENT_URI_TITLE,null,null,null,null);
+//
+            Cursor cursor = getContentResolver().query(NewsContract.ArticleEntry.CONTENT_URI,null,null,null,null);
+            if (cursor.getCount()>0) {
                 newsArticles.clear();
                 while (cursor.moveToNext()) {
                     NewsArticle article = new NewsArticle();
@@ -132,6 +142,16 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         }
         preferences.registerOnSharedPreferenceChangeListener(this);
 
+//        ContentResolver cr = getContentResolver();
+//        Cursor cur = cr.query(ContactsContract.Contacts.CONTENT_URI,
+//                null, null, null, null);
+//        Log.e("URIIII", Uri.parse((ContactsContract.Contacts.CONTENT_URI).toString()).toString());
+//        while(cur.moveToNext()){
+//            String id = cur.getString(
+//                    cur.getColumnIndex(ContactsContract.Contacts._ID));
+//            String name = cur.getString(cur.getColumnIndex(
+//                    ContactsContract.Contacts.DISPLAY_NAME));
+//        }
 
     }
 
@@ -266,19 +286,23 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
                         ContentValues NewsValues = new ContentValues();
 
-                        NewsValues.put(NewsContract.COLUMN_TITLE, title);
-                        NewsValues.put(NewsContract.COLUMN_DESCRIPTION, description);
-                        NewsValues.put(NewsContract.COLUMN_URL, url);
-                        NewsValues.put(NewsContract.COLUMN_URL_TO_IMAGE, urlToImage);
-                        NewsValues.put(NewsContract.COLUMN_CATEGORY, "general");
+                        NewsValues.put(NewsContract.ArticleEntry.COLUMN_TITLE, title);
+                        NewsValues.put(NewsContract.ArticleEntry.COLUMN_DESCRIPTION, description);
+                        NewsValues.put(NewsContract.ArticleEntry.COLUMN_URL, url);
+                        NewsValues.put(NewsContract.ArticleEntry.COLUMN_URL_TO_IMAGE, urlToImage);
+                        NewsValues.put(NewsContract.ArticleEntry.COLUMN_CATEGORY, "general");
                         contentValuesList.add(NewsValues);
                     }
+
                     newsRecyclerAdapter.addAll(newsArticles);
                     newsRecyclerAdapter.notifyDataSetChanged();
-                    newsDBHelper.openConnection();
-                    newsDBHelper.clearNews();
-                    newsDBHelper.insertNews(contentValuesList);
-
+//                    newsDBHelper.openConnection();
+//                    newsDBHelper.clearNews();
+//                    newsDBHelper.insertNews(contentValuesList);
+                    getContentResolver().delete(NewsContract.ArticleEntry.CONTENT_URI,null,null);
+                    ContentValues[] newsValues = new ContentValues[contentValuesList.size()];
+                    contentValuesList.toArray(newsValues);
+                    getContentResolver().bulkInsert(NewsContract.ArticleEntry.CONTENT_URI, newsValues);
 
                 } catch (JSONException e) {
                     Log.e(TAG, e.getMessage(), e);
