@@ -18,6 +18,7 @@ public class NewsDBHelper extends SQLiteOpenHelper {
     public void openConnection() {
         if (mDatabase == null)
             mDatabase = this.getWritableDatabase();
+
     }
 
 
