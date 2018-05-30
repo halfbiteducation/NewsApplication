@@ -78,14 +78,15 @@ public class NewsRecyclerAdapter extends RecyclerView.Adapter<NewsRecyclerAdapte
 
         @Override
         public void onClick(View v) {
-            NewsArticle article= articles.get(getAdapterPosition());
-
-            Intent intent = new Intent(mContext,  DetailsActivity.class);
-            intent.putExtra("urlToImage",article.getUrlToImage());
-            intent.putExtra("headline", article.getTitle());
-            intent.putExtra("desc", article.getDescription());
-            intent.putExtra("url", article.getUrl());
-            mContext.startActivity(intent);
+//            NewsArticle article= articles.get(getAdapterPosition());
+//
+//            Intent intent = new Intent(mContext,  DetailsActivity.class);
+//            intent.putExtra("urlToImage",article.getUrlToImage());
+//            intent.putExtra("headline", article.getTitle());
+//            intent.putExtra("desc", article.getDescription());
+//            intent.putExtra("url", article.getUrl());
+//            mContext.startActivity(intent);
+            ((MainActivity)mContext).onItemSelected(articles,getAdapterPosition());
 
         }
     }

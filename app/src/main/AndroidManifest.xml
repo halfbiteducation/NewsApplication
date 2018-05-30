@@ -25,10 +25,13 @@
         <activity android:name=".SettingsActivity"
             android:parentActivityName=".MainActivity"
             />
+
         <provider
             android:authorities="com.example.prakharagarwal.newsapplication"
             android:name=".Data.NewsProvider"
             android:exported="false"/>
+        <service android:name=".sync.NewsIntentService"
+            />
     </application>
 
 </manifest>

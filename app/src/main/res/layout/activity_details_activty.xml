@@ -3,57 +3,62 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <RelativeLayout
+    <fragment
+        android:id="@+id/detail_fragment"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:name="com.example.prakharagarwal.newsapplication.DetailActivityFragment"/>
+    <!--<RelativeLayout-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent">-->
 
-        <ImageView
-            android:id="@+id/detail_image"
-            android:layout_width="match_parent"
-            android:layout_height="250dp"
-            android:scaleType="fitXY" />
+        <!--<ImageView-->
+            <!--android:id="@+id/detail_image"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="250dp"-->
+            <!--android:scaleType="fitXY" />-->
 
-        <TextView
-            android:id="@+id/detail_headline"
-            style="@style/Base.TextAppearance.AppCompat.Headline"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/detail_image"
-            android:padding="10dp"
-            android:textSize="25sp"
-            android:textStyle="bold" />
+        <!--<TextView-->
+            <!--android:id="@+id/detail_headline"-->
+            <!--style="@style/Base.TextAppearance.AppCompat.Headline"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_below="@+id/detail_image"-->
+            <!--android:padding="10dp"-->
+            <!--android:textSize="25sp"-->
+            <!--android:textStyle="bold" />-->
 
-        <TextView
-            android:id="@+id/detail_desc"
-            style="@style/Base.TextAppearance.AppCompat.Body2"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/detail_headline"
-            android:padding="10dp"
-            android:paddingTop="10dp"
-            android:textSize="20sp" />
+        <!--<TextView-->
+            <!--android:id="@+id/detail_desc"-->
+            <!--style="@style/Base.TextAppearance.AppCompat.Body2"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_below="@+id/detail_headline"-->
+            <!--android:padding="10dp"-->
+            <!--android:paddingTop="10dp"-->
+            <!--android:textSize="20sp" />-->
 
-        <TextView
-            android:id="@+id/detail_fullstory"
-            style="@style/Base.TextAppearance.AppCompat.Body2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_below="@+id/detail_desc"
-            android:clickable="true"
-            android:padding="10dp"
-            android:text="@string/full_story_link"
-            android:textSize="20sp" />
+        <!--<TextView-->
+            <!--android:id="@+id/detail_fullstory"-->
+            <!--style="@style/Base.TextAppearance.AppCompat.Body2"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_alignParentBottom="true"-->
+            <!--android:layout_below="@+id/detail_desc"-->
+            <!--android:clickable="true"-->
+            <!--android:padding="10dp"-->
+            <!--android:text="@string/full_story_link"-->
+            <!--android:textSize="20sp" />-->
 
-        <TextView
-            android:id="@+id/detail_url"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_below="@+id/detail_desc"
-            android:layout_toEndOf="@+id/detail_fullstory"
-            android:layout_toRightOf="@+id/detail_fullstory"
-            android:autoLink="web"
-            android:padding="10dp" />
-    </RelativeLayout>
+        <!--<TextView-->
+            <!--android:id="@+id/detail_url"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_alignParentBottom="true"-->
+            <!--android:layout_below="@+id/detail_desc"-->
+            <!--android:layout_toEndOf="@+id/detail_fullstory"-->
+            <!--android:layout_toRightOf="@+id/detail_fullstory"-->
+            <!--android:autoLink="web"-->
+            <!--android:padding="10dp" />-->
+    <!--</RelativeLayout>-->
 </ScrollView>
