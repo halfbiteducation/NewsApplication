@@ -1,7 +1,6 @@
 package com.example.prakharagarwal.newsapplication;
 
 import android.app.AlarmManager;
-import android.app.Fragment;
 import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
@@ -12,6 +11,7 @@ import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.support.v7.preference.PreferenceManager;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
@@ -70,13 +70,22 @@ public class MainActivityFragment extends Fragment {
     RecyclerView recyclerView;
     List<ContentValues> contentValuesList = new ArrayList<>();
 
-    SharedPreferences.OnSharedPreferenceChangeListener onSharedPreferenceChangeListener=new SharedPreferences.OnSharedPreferenceChangeListener() {
+    SharedPreferences.OnSharedPreferenceChangeListener onSharedPreferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
         @Override
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
             new SyncTask_GET().execute(sharedPreferences.getString(key, "the-verge"));
 
         }
     };
+
+    public static MainActivityFragment newInstance(String id) {
+
+        Bundle args = new Bundle();
+        args.putString("ID",id);
+        MainActivityFragment fragment = new MainActivityFragment();
+        fragment.setArguments(args);
+        return fragment;
+    }
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
@@ -94,9 +103,10 @@ public class MainActivityFragment extends Fragment {
             if (preferences.getString("sources", null) != null) {
                 source = preferences.getString("sources", "the-verge");
             }
+            if(getArguments().get("ID").equals("general"))
             new SyncTask_GET().execute(source);
-//            Intent intent=new Intent(MainActivity.this, NewsIntentService.class);
-//            //startService(intent);
+            else
+                new SyncTask_GET().execute("bbc-sport");
         } else if (id == R.id.menu_item_settings) {
             Intent intent = new Intent(getActivity(), SettingsActivity.class);
             startActivity(intent);
@@ -112,10 +122,20 @@ public class MainActivityFragment extends Fragment {
 
     }
 
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        if (savedInstanceState != null) {
+            newsArticles = (ArrayList<NewsArticle>) savedInstanceState.getSerializable("newsList");
+            newsRecyclerAdapter.addAll(newsArticles);
+            newsRecyclerAdapter.notifyDataSetChanged();
+        }
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_main, container,false);
+        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
         Log.e("lifecyle", "in oncreateview of fragment");
         SharedPreferences preferences1 = getActivity().getSharedPreferences("Alarm", MODE_PRIVATE);
 
@@ -149,6 +169,8 @@ public class MainActivityFragment extends Fragment {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
 
         if (savedInstanceState == null) {
+            if(getArguments().get("ID").equals("general"))
+            {
             Cursor cursor = getActivity().getContentResolver().query(NewsContract.ArticleEntry.CONTENT_URI, null, null, null, null);
             if (cursor.getCount() > 0) {
                 newsArticles.clear();
@@ -169,14 +191,25 @@ public class MainActivityFragment extends Fragment {
                 }
                 new SyncTask_GET().execute(source);
             }
+                preferences.registerOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener);
+
+            }else {
+                new SyncTask_GET().execute("bbc-sport");
+            }
         }
 
-        preferences.registerOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener);
 
 
         return rootView;
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        Log.e(TAG, "on save instance state");
+        outState.putString("value", "1");
+        outState.putSerializable("newsList", newsArticles);
+        super.onSaveInstanceState(outState);
+    }
 
     public class SyncTask_GET extends AsyncTask<String, Integer, String> {
 
@@ -293,11 +326,12 @@ public class MainActivityFragment extends Fragment {
 
                     newsRecyclerAdapter.addAll(newsArticles);
                     newsRecyclerAdapter.notifyDataSetChanged();
-                    getActivity().getContentResolver().delete(NewsContract.ArticleEntry.CONTENT_URI, null, null);
-                    ContentValues[] newsValues = new ContentValues[contentValuesList.size()];
-                    contentValuesList.toArray(newsValues);
-                    getActivity().getContentResolver().bulkInsert(NewsContract.ArticleEntry.CONTENT_URI, newsValues);
-
+                    if(getArguments().get("ID").equals("general")) {
+                        getActivity().getContentResolver().delete(NewsContract.ArticleEntry.CONTENT_URI, null, null);
+                        ContentValues[] newsValues = new ContentValues[contentValuesList.size()];
+                        contentValuesList.toArray(newsValues);
+                        getActivity().getContentResolver().bulkInsert(NewsContract.ArticleEntry.CONTENT_URI, newsValues);
+                    }
                 } catch (JSONException e) {
                     Log.e(TAG, e.getMessage(), e);
                     e.printStackTrace();
@@ -357,60 +391,5 @@ public class MainActivityFragment extends Fragment {
         }
     }
 
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        Log.e("lifecyle", "in onattach of fragment");
-
-    }
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        Log.e("lifecyle", "in onactivitycreated of fragment");
-
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        Log.e("lifecyle", "in onstart of fragment");
-
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        Log.e("lifecyle", "in onresume of fragment");
-
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        Log.e("lifecyle", "in ondetach of fragment");
-
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        Log.e("lifecyle", "in onpause of fragment");
-
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        Log.e("lifecyle", "in onstop of fragment");
-
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        Log.e("lifecyle", "in ondestroyview of fragment");
-
-    }
 
 }
