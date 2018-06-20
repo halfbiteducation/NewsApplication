@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.NavUtils;
+import android.support.v7.app.ActionBar;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -42,6 +44,11 @@ public class DetailActivityFragment extends Fragment {
             sendIntent.setType("text/plain");
 //            startActivity(sendIntent);
             startActivity(Intent.createChooser(sendIntent, "Share"));
+        }else if (id == android.R.id.home) {
+            //  onBackPressed();
+
+            NavUtils.navigateUpFromSameTask(getActivity());
+            // or pass an intent to main activity
         }
         return true;
     }
@@ -56,6 +63,7 @@ public class DetailActivityFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View rootView= inflater.inflate(R.layout.fragment_detail, container, false);
+
         headlineView =  rootView.findViewById(R.id.detail_headline);
         descView = rootView.findViewById(R.id.detail_desc);
         imageView = rootView.findViewById(R.id.detail_image);

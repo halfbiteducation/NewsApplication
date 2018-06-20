@@ -1,6 +1,8 @@
 package com.example.prakharagarwal.newsapplication;
 
 import android.app.AlarmManager;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
@@ -8,10 +10,16 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.database.Cursor;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.NavUtils;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
+import android.support.v4.app.TaskStackBuilder;
 import android.support.v7.preference.PreferenceManager;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
@@ -143,7 +151,7 @@ public class MainActivityFragment extends Fragment {
             Intent intent = new Intent(getActivity(), NewsIntentService.class);
             PendingIntent pendingIntent = PendingIntent.getService(getActivity(), 1, intent, 0);
             AlarmManager alarmManager = (AlarmManager) getActivity().getSystemService(ALARM_SERVICE);
-            alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, Calendar.getInstance().getTimeInMillis(), 6 * 60 * 60 * 1000, pendingIntent);
+            alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, Calendar.getInstance().getTimeInMillis(),  6*60*60 * 1000, pendingIntent);
 
             SharedPreferences.Editor editor = preferences1.edit();
             editor.putString("alarmSet", "set");
@@ -198,11 +206,52 @@ public class MainActivityFragment extends Fragment {
             }
         }
 
+createNotificationChannel();
+//        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getActivity(), "1")
+//                .setSmallIcon(R.drawable.ic_notification)
+//                .setContentTitle("Test Notification")
+//                .setContentText("content")
+//                //.setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_notification))
+//                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+//                .setStyle(new NotificationCompat.BigTextStyle()
+//                        .bigText("Much longer text that cannot fit one line   Much longer text that cannot fit one line"))
+//                .setVisibility(NotificationCompat.VISIBILITY_SECRET);
 
+
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getActivity(), "1")
+                .setSmallIcon(R.drawable.ic_notification)
+                .setContentTitle("Test Notification")
+                .setContentText("content")
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setStyle(new NotificationCompat.BigPictureStyle()
+                        .bigPicture(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_android_toy))
+                .bigLargeIcon(null))
+
+                .setVisibility(NotificationCompat.VISIBILITY_SECRET);
+
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getActivity());
+
+        notificationManager.notify(1, mBuilder.build());
+        notificationManager.notify(1, mBuilder.build());
 
         return rootView;
     }
-
+    private void createNotificationChannel() {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = "news";
+            String description = "news sources";
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel("1", name, importance);
+            channel.setDescription(description);
+            channel.setShowBadge(true);
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this
+            NotificationManager notificationManager = getActivity().getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+    }
     @Override
     public void onSaveInstanceState(Bundle outState) {
         Log.e(TAG, "on save instance state");

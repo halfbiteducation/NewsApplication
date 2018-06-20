@@ -12,13 +12,16 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.FrameLayout;
 
 import com.example.prakharagarwal.newsapplication.Data.NewsDBHelper;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
+public class MainActivity extends AppCompatActivity  {
 
     Boolean mTwoPane;
     ViewPager viewPager;
@@ -102,9 +105,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 //        super.onSaveInstanceState(outState);
 //    }
 
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-    }
+
 
 
 

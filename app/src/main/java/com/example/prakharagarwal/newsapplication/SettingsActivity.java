@@ -24,7 +24,7 @@ public class SettingsActivity extends AppCompatActivity {
         if (id == android.R.id.home) {
           //  onBackPressed();
 
-//            NavUtils.navigateUpFromSameTask(this);
+            NavUtils.navigateUpFromSameTask(this);
             // or pass an intent to main activity
         }
         return true;

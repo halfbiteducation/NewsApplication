@@ -1,18 +1,25 @@
 package com.example.prakharagarwal.newsapplication.sync;
 
 import android.app.IntentService;
+import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.support.annotation.Nullable;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
+import android.support.v4.app.TaskStackBuilder;
 import android.support.v7.preference.PreferenceManager;
 import android.util.Log;
 
 import com.example.prakharagarwal.newsapplication.Data.NewsContract;
+import com.example.prakharagarwal.newsapplication.DetailsActivity;
 import com.example.prakharagarwal.newsapplication.MainActivity;
 import com.example.prakharagarwal.newsapplication.NewsArticle;
+import com.example.prakharagarwal.newsapplication.R;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -48,6 +55,7 @@ import javax.net.ssl.TrustManagerFactory;
 public class NewsIntentService extends IntentService {
     String TAG = NewsIntentService.class.getSimpleName();
     List<ContentValues> contentValuesList = new ArrayList<>();
+    NewsArticle notificationArticle=null;
 
     public NewsIntentService() {
         super("NewsIntentService");
@@ -164,6 +172,9 @@ public class NewsIntentService extends IntentService {
                         newsArticle.setDescription(description);
                         newsArticle.setUrl(url);
                         newsArticle.setUrlToImage(urlToImage);
+                        if(notificationArticle==null){
+                            notificationArticle=newsArticle;
+                        }
 
                         ContentValues NewsValues = new ContentValues();
 
@@ -180,6 +191,7 @@ public class NewsIntentService extends IntentService {
                     ContentValues[] newsValues = new ContentValues[contentValuesList.size()];
                     contentValuesList.toArray(newsValues);
                     getContentResolver().bulkInsert(NewsContract.ArticleEntry.CONTENT_URI, newsValues);
+                    showNotification();
 
                 } catch (JSONException e) {
                     Log.e(TAG, e.getMessage(), e);
@@ -238,5 +250,33 @@ public class NewsIntentService extends IntentService {
             return null;
 
         }
+    }
+
+    private void showNotification() {
+        Intent resultIntent = new Intent(this, DetailsActivity.class);
+        resultIntent.putExtra("urlToImage", notificationArticle.getUrlToImage());
+        resultIntent.putExtra("headline", notificationArticle.getTitle());
+        resultIntent.putExtra("desc", notificationArticle.getDescription());
+        resultIntent.putExtra("url", notificationArticle.getUrl());
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+        stackBuilder.addNextIntentWithParentStack(resultIntent);
+        PendingIntent resultPendingIntent =
+                stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getBaseContext(), "1")
+                .setSmallIcon(R.drawable.ic_notification)
+                .setContentTitle("Test Notification")
+                .setContentText("content")
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setStyle(new NotificationCompat.BigPictureStyle()
+                        .bigPicture(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_android_toy))
+                        .bigLargeIcon(null))
+
+                .setVisibility(NotificationCompat.VISIBILITY_SECRET)
+                .setContentIntent(resultPendingIntent);
+
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getBaseContext());
+
+        notificationManager.notify(1, mBuilder.build());
+        notificationManager.notify(1, mBuilder.build());
     }
 }
