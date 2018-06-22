@@ -218,21 +218,21 @@ createNotificationChannel();
 //                .setVisibility(NotificationCompat.VISIBILITY_SECRET);
 
 
-        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getActivity(), "1")
-                .setSmallIcon(R.drawable.ic_notification)
-                .setContentTitle("Test Notification")
-                .setContentText("content")
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setStyle(new NotificationCompat.BigPictureStyle()
-                        .bigPicture(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_android_toy))
-                .bigLargeIcon(null))
-
-                .setVisibility(NotificationCompat.VISIBILITY_SECRET);
-
-        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getActivity());
-
-        notificationManager.notify(1, mBuilder.build());
-        notificationManager.notify(1, mBuilder.build());
+//        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getActivity(), "1")
+//                .setSmallIcon(R.drawable.ic_notification)
+//                .setContentTitle("Test Notification")
+//                .setContentText("content")
+//                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+//                .setStyle(new NotificationCompat.BigPictureStyle()
+//                        .bigPicture(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_android_toy))
+//                .bigLargeIcon(null))
+//
+//                .setVisibility(NotificationCompat.VISIBILITY_SECRET);
+//
+//        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getActivity());
+//
+//        notificationManager.notify(1, mBuilder.build());
+//        notificationManager.notify(1, mBuilder.build());
 
         return rootView;
     }
