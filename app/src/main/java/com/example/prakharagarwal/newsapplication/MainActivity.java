@@ -84,29 +84,5 @@ public class MainActivity extends AppCompatActivity  {
 
     }
 
-//    @Override
-//    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-//        Log.e(TAG, "on restore instance state");
-//        String value = (String) savedInstanceState.get("value");
-//
-//        newsArticles = (ArrayList<NewsArticle>) savedInstanceState.getSerializable("newsList");
-//        newsRecyclerAdapter.addAll(newsArticles);
-//        newsRecyclerAdapter.notifyDataSetChanged();
-//
-//        super.onRestoreInstanceState(savedInstanceState);
-//    }
-//
-//
-//    @Override
-//    protected void onSaveInstanceState(Bundle outState) {
-//        Log.e(TAG, "on save instance state");
-//        outState.putString("value", "1");
-//        outState.putSerializable("newsList", newsArticles);
-//        super.onSaveInstanceState(outState);
-//    }
-
-
-
-
 
 }

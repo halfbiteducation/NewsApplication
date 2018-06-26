@@ -6,20 +6,19 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.database.Cursor;
-import android.graphics.BitmapFactory;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.NavUtils;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.NotificationManagerCompat;
-import android.support.v4.app.TaskStackBuilder;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.preference.PreferenceManager;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
@@ -31,9 +30,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ProgressBar;
 
 import com.example.prakharagarwal.newsapplication.Data.NewsContract;
-import com.example.prakharagarwal.newsapplication.Data.NewsDBHelper;
 import com.example.prakharagarwal.newsapplication.sync.NewsIntentService;
 
 import org.json.JSONArray;
@@ -77,6 +77,7 @@ public class MainActivityFragment extends Fragment {
     ArrayList<NewsArticle> newsArticles;
     RecyclerView recyclerView;
     List<ContentValues> contentValuesList = new ArrayList<>();
+    ProgressBar progressBar;
 
     SharedPreferences.OnSharedPreferenceChangeListener onSharedPreferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
         @Override
@@ -89,11 +90,12 @@ public class MainActivityFragment extends Fragment {
     public static MainActivityFragment newInstance(String id) {
 
         Bundle args = new Bundle();
-        args.putString("ID",id);
+        args.putString("ID", id);
         MainActivityFragment fragment = new MainActivityFragment();
         fragment.setArguments(args);
         return fragment;
     }
+
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
@@ -105,16 +107,63 @@ public class MainActivityFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.menu_item_refresh) {
-            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+//            progressBar.setVisibility(View.VISIBLE);
+//            recyclerView.setVisibility(View.GONE);
+            final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
 
             String source = null;
             if (preferences.getString("sources", null) != null) {
                 source = preferences.getString("sources", "the-verge");
             }
-            if(getArguments().get("ID").equals("general"))
-            new SyncTask_GET().execute(source);
-            else
-                new SyncTask_GET().execute("bbc-sport");
+            if (new NetworkUtil().checkNetwork(getActivity())) {
+                progressBar.setVisibility(View.VISIBLE);
+                recyclerView.setVisibility(View.GONE);
+                if (getArguments().get("ID").equals("general")) {
+                    new SyncTask_GET().execute(source);
+                }
+                else {
+                    new SyncTask_GET().execute("bbc-sport");
+                }
+            } else {
+//                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+//                builder.setMessage("Please check your network connection")
+//                        .setTitle("No Network")
+//                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+//                            public void onClick(DialogInterface dialog, int id) {
+//
+//                            }
+//                        })
+//                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+//                            public void onClick(DialogInterface dialog, int id) {
+//
+//                            }
+//                        });
+//
+//               builder.create();
+//                builder.show();
+
+                // Custom dialog--
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                builder.setView(R.layout.network_dialog)
+                .setTitle(getString(R.string.no_network));
+
+                final AlertDialog dialog=builder.create();
+                dialog.setContentView(R.layout.network_dialog);
+                dialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                    @Override
+                    public void onCancel(DialogInterface dialogInterface) {
+                        dialog.dismiss();;
+                    }
+                });
+                Button okButton=(Button) dialog.findViewById(R.id.dialog_ok);
+                okButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        dialog.dismiss();
+                    }
+                });
+                builder.show();
+            }
         } else if (id == R.id.menu_item_settings) {
             Intent intent = new Intent(getActivity(), SettingsActivity.class);
             startActivity(intent);
@@ -134,6 +183,7 @@ public class MainActivityFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         if (savedInstanceState != null) {
+            progressBar.setVisibility(View.GONE);
             newsArticles = (ArrayList<NewsArticle>) savedInstanceState.getSerializable("newsList");
             newsRecyclerAdapter.addAll(newsArticles);
             newsRecyclerAdapter.notifyDataSetChanged();
@@ -145,21 +195,21 @@ public class MainActivityFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
         Log.e("lifecyle", "in oncreateview of fragment");
+        progressBar = rootView.findViewById(R.id.progressbar);
+        progressBar.setIndeterminate(true);
+
         SharedPreferences preferences1 = getActivity().getSharedPreferences("Alarm", MODE_PRIVATE);
 
-        if (preferences1.getString("alarmSet", null) == null) {
+      //  if (preferences1.getString("alarmSet", null) == null) {
             Intent intent = new Intent(getActivity(), NewsIntentService.class);
             PendingIntent pendingIntent = PendingIntent.getService(getActivity(), 1, intent, 0);
             AlarmManager alarmManager = (AlarmManager) getActivity().getSystemService(ALARM_SERVICE);
-            alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, Calendar.getInstance().getTimeInMillis(),  6*60*60 * 1000, pendingIntent);
+            alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, Calendar.getInstance().getTimeInMillis(),  60 * 1000, pendingIntent);
 
             SharedPreferences.Editor editor = preferences1.edit();
             editor.putString("alarmSet", "set");
             editor.apply();
-
-            //if you want to cancel the alarm, pass same intent with same request code;
-//               alarmManager.cancel(pendingIntent);
-        }
+       // }
 
 
         newsArticles = new ArrayList<>();
@@ -177,65 +227,41 @@ public class MainActivityFragment extends Fragment {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
 
         if (savedInstanceState == null) {
-            if(getArguments().get("ID").equals("general"))
-            {
-            Cursor cursor = getActivity().getContentResolver().query(NewsContract.ArticleEntry.CONTENT_URI, null, null, null, null);
-            if (cursor.getCount() > 0) {
-                newsArticles.clear();
-                while (cursor.moveToNext()) {
-                    NewsArticle article = new NewsArticle();
-                    article.setTitle(cursor.getString(0));
-                    article.setDescription(cursor.getString(1));
-                    article.setUrl(cursor.getString(2));
-                    article.setUrlToImage(cursor.getString(3));
-                    newsArticles.add(article);
+            if (getArguments().get("ID").equals("general")) {
+                Cursor cursor = getActivity().getContentResolver().query(NewsContract.ArticleEntry.CONTENT_URI, null, null, null, null);
+                if (cursor.getCount() > 0) {
+                    newsArticles.clear();
+                    while (cursor.moveToNext()) {
+                        NewsArticle article = new NewsArticle();
+                        article.setTitle(cursor.getString(0));
+                        article.setDescription(cursor.getString(1));
+                        article.setUrl(cursor.getString(2));
+                        article.setUrlToImage(cursor.getString(3));
+                        newsArticles.add(article);
+                    }
+                    progressBar.setVisibility(View.GONE);
+                    recyclerView.setVisibility(View.VISIBLE);
+                    newsRecyclerAdapter.addAll(newsArticles);
+                    newsRecyclerAdapter.notifyDataSetChanged();
+                } else {
+                    String source = "the-verge";
+                    if (preferences.getString("sources", null) != null) {
+                        source = preferences.getString("sources", "the-verge");
+                    }
+                    new SyncTask_GET().execute(source);
                 }
-                newsRecyclerAdapter.addAll(newsArticles);
-                newsRecyclerAdapter.notifyDataSetChanged();
-            } else {
-                String source = "the-verge";
-                if (preferences.getString("sources", null) != null) {
-                    source = preferences.getString("sources", "the-verge");
-                }
-                new SyncTask_GET().execute(source);
-            }
                 preferences.registerOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener);
 
-            }else {
+            } else {
                 new SyncTask_GET().execute("bbc-sport");
             }
         }
 
-createNotificationChannel();
-//        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getActivity(), "1")
-//                .setSmallIcon(R.drawable.ic_notification)
-//                .setContentTitle("Test Notification")
-//                .setContentText("content")
-//                //.setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_notification))
-//                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-//                .setStyle(new NotificationCompat.BigTextStyle()
-//                        .bigText("Much longer text that cannot fit one line   Much longer text that cannot fit one line"))
-//                .setVisibility(NotificationCompat.VISIBILITY_SECRET);
-
-
-//        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getActivity(), "1")
-//                .setSmallIcon(R.drawable.ic_notification)
-//                .setContentTitle("Test Notification")
-//                .setContentText("content")
-//                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-//                .setStyle(new NotificationCompat.BigPictureStyle()
-//                        .bigPicture(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_android_toy))
-//                .bigLargeIcon(null))
-//
-//                .setVisibility(NotificationCompat.VISIBILITY_SECRET);
-//
-//        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getActivity());
-//
-//        notificationManager.notify(1, mBuilder.build());
-//        notificationManager.notify(1, mBuilder.build());
+        createNotificationChannel();
 
         return rootView;
     }
+
     private void createNotificationChannel() {
         // Create the NotificationChannel, but only on API 26+ because
         // the NotificationChannel class is new and not in the support library
@@ -252,6 +278,7 @@ createNotificationChannel();
             notificationManager.createNotificationChannel(channel);
         }
     }
+
     @Override
     public void onSaveInstanceState(Bundle outState) {
         Log.e(TAG, "on save instance state");
@@ -373,9 +400,11 @@ createNotificationChannel();
                         contentValuesList.add(NewsValues);
                     }
 
+                    progressBar.setVisibility(View.GONE);
+                    recyclerView.setVisibility(View.VISIBLE);
                     newsRecyclerAdapter.addAll(newsArticles);
                     newsRecyclerAdapter.notifyDataSetChanged();
-                    if(getArguments().get("ID").equals("general")) {
+                    if (getArguments().get("ID").equals("general")) {
                         getActivity().getContentResolver().delete(NewsContract.ArticleEntry.CONTENT_URI, null, null);
                         ContentValues[] newsValues = new ContentValues[contentValuesList.size()];
                         contentValuesList.toArray(newsValues);

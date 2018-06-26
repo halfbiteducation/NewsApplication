@@ -262,6 +262,7 @@ public class NewsIntentService extends IntentService {
         stackBuilder.addNextIntentWithParentStack(resultIntent);
         PendingIntent resultPendingIntent =
                 stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+//        PendingIntent pendingIntent=PendingIntent.getActivity(getBaseContext(),1,resultIntent,PendingIntent.FLAG_UPDATE_CURRENT);
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getBaseContext(), "1")
                 .setSmallIcon(R.drawable.ic_notification)
                 .setContentTitle("Test Notification")
@@ -272,6 +273,7 @@ public class NewsIntentService extends IntentService {
                         .bigLargeIcon(null))
 
                 .setVisibility(NotificationCompat.VISIBILITY_SECRET)
+                .setAutoCancel(true)
                 .setContentIntent(resultPendingIntent);
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getBaseContext());
